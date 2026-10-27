@@ -159,8 +159,9 @@ ENV PATH="/usr/share/grafana/bin:$PATH" \
 WORKDIR $GF_PATHS_HOME
 
 # Install dependencies
+# libcurl pulls in brotli-libs; the minimum version keeps the CVE-2026-111497 fix in the image
 RUN if grep -i -q alpine /etc/issue; then \
-  apk add --no-cache ca-certificates bash curl tzdata musl-utils && \
+  apk add --no-cache ca-certificates bash curl tzdata musl-utils 'brotli-libs>=1.1.1-r0' && \
   apk info -vv | sort; \
   elif grep -i -q ubuntu /etc/issue; then \
   DEBIAN_FRONTEND=noninteractive && \
