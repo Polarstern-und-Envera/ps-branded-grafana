@@ -45,6 +45,8 @@ COPY emails emails
 
 ENV NODE_ENV=production
 RUN yarn build
+# COPY keeps build-context permissions; make files readable for the non-root grafana user regardless of the checkout umask
+RUN chmod -R a+rX public LICENSE
 
 # Golang build stage
 FROM ${GO_IMAGE} AS go-builder
@@ -122,6 +124,7 @@ ENV COMMIT_SHA=${COMMIT_SHA}
 ENV BUILD_BRANCH=${BUILD_BRANCH}
 
 RUN make build-go GO_BUILD_TAGS=${GO_BUILD_TAGS} WIRE_TAGS=${WIRE_TAGS}
+RUN chmod -R a+rX conf
 
 # From-tarball build stage
 FROM ${BASE_IMAGE} AS tgz-builder
@@ -228,7 +231,7 @@ EXPOSE 3000
 
 ARG RUN_SH=./packaging/docker/run.sh
 
-COPY ${RUN_SH} /run.sh
+COPY --chmod=755 ${RUN_SH} /run.sh
 
 USER "$GF_UID"
 ENTRYPOINT [ "/run.sh" ]
